@@ -1,0 +1,1119 @@
+openapi: 3.1.0
+servers:
+- url: https://api.placekit.co
+info:
+  contact:
+    name: API Support
+    url: https://api.placekit.co
+  description: PlaceKit OpenAPI Specifications ([repository](https://github.com/placekit/api-reference))
+  termsOfService: https://placekit.io/terms
+  title: PlaceKit API Reference
+  version: 1.0.0
+  x-apisguru-categories:
+  - location
+  x-origin:
+  - format: openapi
+    url: https://raw.githubusercontent.com/placekit/api-reference/main/openapi.yml
+    version: '3.1'
+  x-providerName: placekit.co
+security:
+- api_key: []
+paths:
+  /reverse:
+    post:
+      description: "Performs a reverse geocoding search.\n\nIt will return the closest
+        results around `coordinates`.\\\nIf `coordinates` are not set, it will use
+        the user's IP to approximate its coordinates but results will be less accurate
+        (city level accuracy instead of street level accuracy).\n"
+      operationId: reverse
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - properties:
+                  coordinates:
+                    description: "GPS coordinates latitude and longitude.\\\nUsed
+                      to improve relevancy of results around the given area.\n"
+                    example: 48.873662, 2.295063
+                    type: string
+                  countries:
+                    description: "Array of [two-letter ISO 3166-1 alpha-2 country
+                      codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).\\\n
+                      Limit the results to given countries.\\\nSelect only one country
+                      for the best results.\n"
+                    example:
+                    - fr
+                    items:
+                      type: string
+                    type: array
+                  countryByIP:
+                    default: false
+                    description: "Automatically select the country to search in via
+                      the user IP's detected location.\\\nReturned results will be
+                      coming from the user's country's IP.\\\nIf set to `true`, the
+                      parameter `countries` acts as a fallback.\n"
+                    type: boolean
+                  language:
+                    description: "[Two-letter ISO 639-1 language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).\\
+                      \nDefault results are in their original language.\\\nBy setting
+                      this parameter, you can change the language of the results,
+                      if the translation is available.\\\nContact us if you need other
+                      languages.\n"
+                    enum:
+                    - en
+                    - fr
+                    example: fr
+                    type: string
+                  maxResults:
+                    default: 5
+                    description: Maximum number of results to return.
+                    maximum: 20
+                    minimum: 1
+                    type: integer
+                  types:
+                    description: "Select the types of record to return.\\\nPrepend
+                      with `-` to omit a type.\\\nReturns all types by default.\n"
+                    items:
+                      enum:
+                      - airport
+                      - -airport
+                      - bus
+                      - -bus
+                      - city
+                      - -city
+                      - country
+                      - -country
+                      - street
+                      - -street
+                      - tourism
+                      - -tourism
+                      - townhall
+                      - -townhall
+                      - train
+                      - -train
+                      type: string
+                    type: array
+                type: object
+              - properties:
+                  countryByIP:
+                    default: true
+                    description: "Automatically select the country to search in via
+                      the user IP's detected location.\\\nReturned results will be
+                      coming from the user's country's IP.\\\nIf set to `true`, the
+                      parameter `countries` acts as a fallback.\n"
+                    type: boolean
+                type: object
+        description: Request parameters
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  maxResults:
+                    description: Maximum number of results items returned.
+                    example: 5
+                    type: integer
+                  query:
+                    description: Search text query used for this response.
+                    example: 42 avenue Champs Elysees Paris
+                    type: string
+                  results:
+                    items:
+                      properties:
+                        administrative:
+                          description: Administrative name (region).
+                          example: Île-de-France
+                          type: string
+                        city:
+                          description: City name.
+                          example: Paris 8e Arrondissement
+                          type: string
+                        country:
+                          description: Country name.
+                          example: France
+                          type: string
+                        countrycode:
+                          description: "[Two-letter ISO 3166-1 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).\n"
+                          example: fr
+                          type: string
+                        county:
+                          description: County name (department).
+                          example: Paris
+                          type: string
+                        highlight:
+                          description: Name of the current entity with highlighted
+                            matched words.
+                          example: <mark>42 Avenue</mark> des <mark>Champs Élysées</mark>
+                          type: string
+                        lat:
+                          description: Latitude.
+                          example: 48.871086
+                          type: number
+                        lng:
+                          description: Longitude.
+                          example: 2.3036339
+                          type: number
+                        name:
+                          description: Name of the current entity.
+                          example: 42 Avenue des Champs Élysées
+                          type: string
+                        population:
+                          description: Population number of the entity city.
+                          example: 2220445
+                          type: integer
+                        type:
+                          description: Type of the entity.
+                          enum:
+                          - airport
+                          - bus
+                          - city
+                          - country
+                          - street
+                          - tourism
+                          - townhall
+                          - train
+                          example: street
+                          type: string
+                        zipcode:
+                          description: Postcodes associated with the entity.
+                          example:
+                          - '75008'
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    type: array
+                  resultsCount:
+                    description: Number of items results found.
+                    example: 2
+                    type: integer
+                type: object
+          description: Returns a list of matching addresses
+          headers:
+            RateLimit-Limit:
+              description: Request limit per minute.
+              example: 5
+              schema:
+                type: integer
+            RateLimit-Remaining:
+              description: The number of requests left for the time window.
+              example: 2
+              schema:
+                type: integer
+            RateLimit-Reset:
+              description: Indicates how many seconds are left to wait before making
+                a follow-up request.
+              example: 34
+              schema:
+                type: integer
+            Retry-After:
+              description: Indicates how many seconds to wait before making a follow-up
+                request.
+              example: 60
+              schema:
+                type: integer
+        '401':
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    example: Access denied authentication failed
+                    type: string
+                type: object
+          description: Access denied authentication failed
+        '403':
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    example: You are not authorized to access this resource
+                    type: string
+                type: object
+          description: You are not authorized to access this resource
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    example: Route not found
+                    type: string
+                type: object
+          description: Route not found
+        '412':
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    example: Access denied missing credentials
+                    type: string
+                type: object
+          description: Access denied missing credentials
+        '422':
+          content:
+            application/json:
+              schema:
+                properties:
+                  errors:
+                    example:
+                    - location: body
+                      msg: Must be an integer between 1 and 20 included.
+                      param: maxResults
+                      value: 42
+                    - location: body
+                      msg: This country is not supported. Contact us if you need it.
+                      param: countries[0]
+                      value: sx
+                    items:
+                      properties:
+                        location:
+                          type: string
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                  message:
+                    example: 'Invalid body parameters. Check the API documentation:
+                      https://api.placekit.io/'
+                    type: string
+                type: object
+          description: Invalid body parameters
+        '429':
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    example: Too many requests from this IP, please try again in a
+                      minute
+                    type: string
+                  status:
+                    example: 429
+                    type: integer
+                type: object
+          description: Too many requests from this IP, please try again in a minute
+      summary: Reverse geocoding
+      x-codeSamples:
+      - lang: curl
+        source: "curl --location --request POST 'https://api.placekit.co/reverse'
+          \\\n     --header 'Content-Type: application/json' \\\n     --header 'x-placekit-api-key:
+          <PLACEKIT_API_KEY>' \\\n     --data-raw '{\n      \"countries\": [\"fr\"\
+          ],\n      \"language\": \"fr\",\n      \"types\": [\"street\"],\n      \"\
+          maxResults\": 5,\n      \"coordinates\": \"48.873662, 2.295063\"\n    }'"
+      - lang: go
+        source: "package main\n\nimport (\n  \"fmt\"\n  \"strings\"\n  \"net/http\"\
+          \n  \"io/ioutil\"\n)\n\nfunc main() {\n\n  url := \"https://api.placekit.co/reverse\"\
+          \n  method := \"POST\"\n\n  payload := strings.NewReader(`{\n    \"countries\"\
+          : [\"fr\"],\n    \"language\": \"fr\",\n    \"types\": [\"street\"],\n \
+          \   \"maxResults\": 5,\n    \"coordinates\": \"48.873662, 2.295063\"\n \
+          \ }`)\n\n  client := &http.Client {\n  }\n  req, err := http.NewRequest(method,
+          url, payload)\n  \n  if err != nil {\n    fmt.Println(err)\n    return\n\
+          \  }\n  req.Header.Add(\"Content-Type\", \"application/json\")\n  req.Header.Add(\"\
+          x-placekit-api-key\", \"<PLACEKIT_API_KEY>\")\n  \n  res, err := client.Do(req)\n\
+          \  if err != nil {\n    fmt.Println(err)\n    return\n  }\n  defer res.Body.Close()\n\
+          \  \n  body, err := ioutil.ReadAll(res.Body)\n  if err != nil {\n    fmt.Println(err)\n\
+          \    return\n  }\n  fmt.Println(string(body))\n}"
+      - lang: js
+        source: "var myHeaders = new Headers();\nmyHeaders.append('Content-Type',
+          'application/json');\nmyHeaders.append('x-placekit-api-key', '<PLACEKIT_API_KEY>');\n
+          \nvar raw = JSON.stringify({\n  countries: ['fr'],\n  language: 'fr',\n\
+          \  types: ['street'],\n  maxResults: 5,\n  coordinates: '48.873662, 2.295063'\n
+          });\n\nvar requestOptions = {\n  method: 'POST',\n  headers: myHeaders,\n\
+          \  body: raw,\n  redirect: 'follow'\n};\n\nfetch('https://api.placekit.co/reverse',
+          requestOptions)\n  .then(response => response.text())\n  .then(result =>
+          console.log(result))\n  .catch(error => console.log('error', error));"
+      - lang: python
+        source: "import http.client\nimport json\n\nconn = http.client.HTTPSConnection('api.placekit.co')\n
+          payload = json.dumps({\n  'countries': ['fr'],\n  'language': 'fr',\n  'types':
+          ['street'],\n  'maxResults': 5,\n  'coordinates': '48.873662, 2.295063'\n
+          })\nheaders = {\n  'Content-Type': 'application/json',\n  'x-placekit-api-key':
+          '<PLACEKIT_API_KEY>'\n}\nconn.request('POST', '/reverse', payload, headers)\n
+          res = conn.getresponse()\ndata = res.read()\nprint(data.decode('utf-8'))"
+      - lang: ruby
+        source: "require 'uri'\nrequire 'json'\nrequire 'net/http'\n\nurl = URI('https://api.placekit.co/reverse')\n
+          \nhttps = Net::HTTP.new(url.host, url.port)\nhttps.use_ssl = true\n\nrequest
+          = Net::HTTP::Post.new(url)\nrequest['Content-Type'] = 'application/json'\n\
+          request['x-placekit-api-key'] = '<PLACEKIT_API_KEY>'\nrequest.body = {\n\
+          \  countries: ['fr'],\n  language: 'fr',\n  types: ['street'],\n  maxResults:
+          5,\n  coordinates: '48.873662, 2.295063'\n}.to_json\n\nresponse = https.request(request)\n
+          pp JSON.parse(response.read_body)\n"
+      x-codegen-request-body-name: payload
+  /search:
+    post:
+      description: "Performs a forward geocoding search.\n\nIt will return results
+        around `coordinates` (if provided) and the best matching textual relevance.\n
+        \n**It is highly recommended** to set the `countries` parameter with the country
+        you need results from for the best accuracy and revelance possible.\n"
+      operationId: search
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - properties:
+                  query:
+                    default: ''
+                    description: Search query terms.
+                    example: 42 avenue Champs Elysees Paris
+                    type: string
+                type: object
+              - properties:
+                  coordinates:
+                    description: "GPS coordinates latitude and longitude.\\\nUsed
+                      to improve relevancy of results around the given area.\n"
+                    example: 48.873662, 2.295063
+                    type: string
+                  countries:
+                    description: "Array of [two-letter ISO 3166-1 alpha-2 country
+                      codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).\\\n
+                      Limit the results to given countries.\\\nSelect only one country
+                      for the best results.\n"
+                    example:
+                    - fr
+                    items:
+                      type: string
+                    type: array
+                  countryByIP:
+                    default: false
+                    description: "Automatically select the country to search in via
+                      the user IP's detected location.\\\nReturned results will be
+                      coming from the user's country's IP.\\\nIf set to `true`, the
+                      parameter `countries` acts as a fallback.\n"
+                    type: boolean
+                  language:
+                    description: "[Two-letter ISO 639-1 language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).\\
+                      \nDefault results are in their original language.\\\nBy setting
+                      this parameter, you can change the language of the results,
+                      if the translation is available.\\\nContact us if you need other
+                      languages.\n"
+                    enum:
+                    - en
+                    - fr
+                    example: fr
+                    type: string
+                  maxResults:
+                    default: 5
+                    description: Maximum number of results to return.
+                    maximum: 20
+                    minimum: 1
+                    type: integer
+                  types:
+                    description: "Select the types of record to return.\\\nPrepend
+                      with `-` to omit a type.\\\nReturns all types by default.\n"
+                    items:
+                      enum:
+                      - airport
+                      - -airport
+                      - bus
+                      - -bus
+                      - city
+                      - -city
+                      - country
+                      - -country
+                      - street
+                      - -street
+                      - tourism
+                      - -tourism
+                      - townhall
+                      - -townhall
+                      - train
+                      - -train
+                      type: string
+                    type: array
+                type: object
+        description: Request parameters
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  maxResults:
+                    description: Maximum number of results items returned.
+                    example: 5
+                    type: integer
+                  query:
+                    description: Search text query used for this response.
+                    example: 42 avenue Champs Elysees Paris
+                    type: string
+                  results:
+                    items:
+                      properties:
+                        administrative:
+                          description: Administrative name (region).
+                          example: Île-de-France
+                          type: string
+                        city:
+                          description: City name.
+                          example: Paris 8e Arrondissement
+                          type: string
+                        country:
+                          description: Country name.
+                          example: France
+                          type: string
+                        countrycode:
+                          description: "[Two-letter ISO 3166-1 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).\n"
+                          example: fr
+                          type: string
+                        county:
+                          description: County name (department).
+                          example: Paris
+                          type: string
+                        highlight:
+                          description: Name of the current entity with highlighted
+                            matched words.
+                          example: <mark>42 Avenue</mark> des <mark>Champs Élysées</mark>
+                          type: string
+                        lat:
+                          description: Latitude.
+                          example: 48.871086
+                          type: number
+                        lng:
+                          description: Longitude.
+                          example: 2.3036339
+                          type: number
+                        name:
+                          description: Name of the current entity.
+                          example: 42 Avenue des Champs Élysées
+                          type: string
+                        population:
+                          description: Population number of the entity city.
+                          example: 2220445
+                          type: integer
+                        type:
+                          description: Type of the entity.
+                          enum:
+                          - airport
+                          - bus
+                          - city
+                          - country
+                          - street
+                          - tourism
+                          - townhall
+                          - train
+                          example: street
+                          type: string
+                        zipcode:
+                          description: Postcodes associated with the entity.
+                          example:
+                          - '75008'
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    type: array
+                  resultsCount:
+                    description: Number of items results found.
+                    example: 2
+                    type: integer
+                type: object
+          description: Returns a list of matching addresses
+          headers:
+            RateLimit-Limit:
+              description: Request limit per minute.
+              example: 5
+              schema:
+                type: integer
+            RateLimit-Remaining:
+              description: The number of requests left for the time window.
+              example: 2
+              schema:
+                type: integer
+            RateLimit-Reset:
+              description: Indicates how many seconds are left to wait before making
+                a follow-up request.
+              example: 34
+              schema:
+                type: integer
+            Retry-After:
+              description: Indicates how many seconds to wait before making a follow-up
+                request.
+              example: 60
+              schema:
+                type: integer
+        '401':
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    example: Access denied authentication failed
+                    type: string
+                type: object
+          description: Access denied authentication failed
+        '403':
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    example: You are not authorized to access this resource
+                    type: string
+                type: object
+          description: You are not authorized to access this resource
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    example: Route not found
+                    type: string
+                type: object
+          description: Route not found
+        '412':
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    example: Access denied missing credentials
+                    type: string
+                type: object
+          description: Access denied missing credentials
+        '422':
+          content:
+            application/json:
+              schema:
+                properties:
+                  errors:
+                    example:
+                    - location: body
+                      msg: Must be an integer between 1 and 20 included.
+                      param: maxResults
+                      value: 42
+                    - location: body
+                      msg: This country is not supported. Contact us if you need it.
+                      param: countries[0]
+                      value: sx
+                    items:
+                      properties:
+                        location:
+                          type: string
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                  message:
+                    example: 'Invalid body parameters. Check the API documentation:
+                      https://api.placekit.io/'
+                    type: string
+                type: object
+          description: Invalid body parameters
+        '429':
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    example: Too many requests from this IP, please try again in a
+                      minute
+                    type: string
+                  status:
+                    example: 429
+                    type: integer
+                type: object
+          description: Too many requests from this IP, please try again in a minute
+      summary: Search for addresses
+      x-codeSamples:
+      - lang: curl
+        source: "curl --location --request POST 'https://api.placekit.co/search' \\\
+          \n     --header 'Content-Type: application/json' \\\n     --header 'x-placekit-api-key:
+          <PLACEKIT_API_KEY>' \\\n     --data-raw '{\n      \"query\": \"42 avenue
+          Champs Elysees Paris\",\n      \"countries\": [\"fr\"],\n      \"language\"\
+          : \"fr\",\n      \"types\": [\"street\"],\n      \"maxResults\": 5,\n  \
+          \    \"coordinates\": \"48.873662, 2.295063\"\n    }'"
+      - lang: go
+        source: "package main\n\nimport (\n  \"fmt\"\n  \"strings\"\n  \"net/http\"\
+          \n  \"io/ioutil\"\n)\n\nfunc main() {\n\n  url := \"https://api.placekit.co/search\"\
+          \n  method := \"POST\"\n\n  payload := strings.NewReader(`{\n    \"query\"\
+          : \"42 avenue Champs Elysees Paris\",\n    \"countries\": [\"fr\"],\n  \
+          \  \"language\": \"fr\",\n    \"types\": [\"street\"],\n    \"maxResults\"\
+          : 5,\n    \"coordinates\": \"48.873662, 2.295063\"\n  }`)\n\n  client :=
+          &http.Client {\n  }\n  req, err := http.NewRequest(method, url, payload)\n\
+          \n  if err != nil {\n    fmt.Println(err)\n    return\n  }\n  req.Header.Add(\"\
+          Content-Type\", \"application/json\")\n  req.Header.Add(\"x-placekit-api-key\"\
+          , \"<PLACEKIT_API_KEY>\")\n\n  res, err := client.Do(req)\n  if err != nil
+          {\n    fmt.Println(err)\n    return\n  }\n  defer res.Body.Close()\n\n \
+          \ body, err := ioutil.ReadAll(res.Body)\n  if err != nil {\n    fmt.Println(err)\n\
+          \    return\n  }\n  fmt.Println(string(body))\n}"
+      - lang: js
+        source: "var myHeaders = new Headers();\nmyHeaders.append('Content-Type',
+          'application/json');\nmyHeaders.append('x-placekit-api-key', '<PLACEKIT_API_KEY>');\n
+          \nvar raw = JSON.stringify({\n  query: '42 avenue Champs Elysees Paris',\n\
+          \  countries: ['fr'],\n  language: 'fr',\n  types: ['street'],\n  maxResults:
+          5,\n  coordinates: '48.873662, 2.295063'\n});\n\nvar requestOptions = {\n\
+          \  method: 'POST',\n  headers: myHeaders,\n  body: raw,\n  redirect: 'follow'\n\
+          };\n\nfetch('https://api.placekit.co/search', requestOptions)\n  .then(response
+          => response.text())\n  .then(result => console.log(result))\n  .catch(error
+          => console.log('error', error));"
+      - lang: python
+        source: "import http.client\nimport json\n\nconn = http.client.HTTPSConnection('api.placekit.co')\n
+          payload = json.dumps({\n  'query': '42 avenue Champs Elysees Paris',\n \
+          \ 'countries': ['fr'],\n  'language': 'fr',\n  'types': ['street'],\n  'maxResults':
+          5,\n  'coordinates': '48.873662, 2.295063'\n})\nheaders = {\n  'Content-Type':
+          'application/json',\n  'x-placekit-api-key': '<PLACEKIT_API_KEY>'\n}\nconn.request('POST',
+          '/search', payload, headers)\nres = conn.getresponse()\ndata = res.read()\n\
+          print(data.decode('utf-8'))"
+      - lang: ruby
+        source: "require 'uri'\nrequire 'json'\nrequire 'net/http'\n\nurl = URI('https://api.placekit.co/search')\n
+          \nhttps = Net::HTTP.new(url.host, url.port)\nhttps.use_ssl = true\n\nrequest
+          = Net::HTTP::Post.new(url)\nrequest['Content-Type'] = 'application/json'\n\
+          request['x-placekit-api-key'] = '<PLACEKIT_API_KEY>'\nrequest.body = {\n\
+          \  query: '42 avenue Champs Elysees Paris',\n  countries: ['fr'],\n  language:
+          'fr',\n  types: ['street'],\n  maxResults: 5,\n  coordinates: '48.873662,
+          2.295063'\n}.to_json\n\nresponse = https.request(request)\npp JSON.parse(response.read_body)\n"
+      x-codegen-request-body-name: payload
+components:
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            properties:
+              maxResults:
+                description: Maximum number of results items returned.
+                example: 5
+                type: integer
+              query:
+                description: Search text query used for this response.
+                example: 42 avenue Champs Elysees Paris
+                type: string
+              results:
+                items:
+                  properties:
+                    administrative:
+                      description: Administrative name (region).
+                      example: Île-de-France
+                      type: string
+                    city:
+                      description: City name.
+                      example: Paris 8e Arrondissement
+                      type: string
+                    country:
+                      description: Country name.
+                      example: France
+                      type: string
+                    countrycode:
+                      description: "[Two-letter ISO 3166-1 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).\n"
+                      example: fr
+                      type: string
+                    county:
+                      description: County name (department).
+                      example: Paris
+                      type: string
+                    highlight:
+                      description: Name of the current entity with highlighted matched
+                        words.
+                      example: <mark>42 Avenue</mark> des <mark>Champs Élysées</mark>
+                      type: string
+                    lat:
+                      description: Latitude.
+                      example: 48.871086
+                      type: number
+                    lng:
+                      description: Longitude.
+                      example: 2.3036339
+                      type: number
+                    name:
+                      description: Name of the current entity.
+                      example: 42 Avenue des Champs Élysées
+                      type: string
+                    population:
+                      description: Population number of the entity city.
+                      example: 2220445
+                      type: integer
+                    type:
+                      description: Type of the entity.
+                      enum:
+                      - airport
+                      - bus
+                      - city
+                      - country
+                      - street
+                      - tourism
+                      - townhall
+                      - train
+                      example: street
+                      type: string
+                    zipcode:
+                      description: Postcodes associated with the entity.
+                      example:
+                      - '75008'
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                type: array
+              resultsCount:
+                description: Number of items results found.
+                example: 2
+                type: integer
+            type: object
+      description: Returns a list of matching addresses
+      headers:
+        RateLimit-Limit:
+          description: Request limit per minute.
+          example: 5
+          schema:
+            type: integer
+        RateLimit-Remaining:
+          description: The number of requests left for the time window.
+          example: 2
+          schema:
+            type: integer
+        RateLimit-Reset:
+          description: Indicates how many seconds are left to wait before making a
+            follow-up request.
+          example: 34
+          schema:
+            type: integer
+        Retry-After:
+          description: Indicates how many seconds to wait before making a follow-up
+            request.
+          example: 60
+          schema:
+            type: integer
+    '401':
+      content:
+        application/json:
+          schema:
+            properties:
+              message:
+                example: Access denied authentication failed
+                type: string
+            type: object
+      description: Access denied authentication failed
+    '403':
+      content:
+        application/json:
+          schema:
+            properties:
+              message:
+                example: You are not authorized to access this resource
+                type: string
+            type: object
+      description: You are not authorized to access this resource
+    '404':
+      content:
+        application/json:
+          schema:
+            properties:
+              message:
+                example: Route not found
+                type: string
+            type: object
+      description: Route not found
+    '412':
+      content:
+        application/json:
+          schema:
+            properties:
+              message:
+                example: Access denied missing credentials
+                type: string
+            type: object
+      description: Access denied missing credentials
+    '422':
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                example:
+                - location: body
+                  msg: Must be an integer between 1 and 20 included.
+                  param: maxResults
+                  value: 42
+                - location: body
+                  msg: This country is not supported. Contact us if you need it.
+                  param: countries[0]
+                  value: sx
+                items:
+                  properties:
+                    location:
+                      type: string
+                    msg:
+                      type: string
+                    param:
+                      type: string
+                    value:
+                      type: string
+                  type: object
+                type: array
+              message:
+                example: 'Invalid body parameters. Check the API documentation: https://api.placekit.io/'
+                type: string
+            type: object
+      description: Invalid body parameters
+    '429':
+      content:
+        application/json:
+          schema:
+            properties:
+              message:
+                example: Too many requests from this IP, please try again in a minute
+                type: string
+              status:
+                example: 429
+                type: integer
+            type: object
+      description: Too many requests from this IP, please try again in a minute
+  schemas:
+    entity:
+      properties:
+        administrative:
+          description: Administrative name (region).
+          example: Île-de-France
+          type: string
+        city:
+          description: City name.
+          example: Paris 8e Arrondissement
+          type: string
+        country:
+          description: Country name.
+          example: France
+          type: string
+        countrycode:
+          description: "[Two-letter ISO 3166-1 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).\n"
+          example: fr
+          type: string
+        county:
+          description: County name (department).
+          example: Paris
+          type: string
+        highlight:
+          description: Name of the current entity with highlighted matched words.
+          example: <mark>42 Avenue</mark> des <mark>Champs Élysées</mark>
+          type: string
+        lat:
+          description: Latitude.
+          example: 48.871086
+          type: number
+        lng:
+          description: Longitude.
+          example: 2.3036339
+          type: number
+        name:
+          description: Name of the current entity.
+          example: 42 Avenue des Champs Élysées
+          type: string
+        population:
+          description: Population number of the entity city.
+          example: 2220445
+          type: integer
+        type:
+          description: Type of the entity.
+          enum:
+          - airport
+          - bus
+          - city
+          - country
+          - street
+          - tourism
+          - townhall
+          - train
+          example: street
+          type: string
+        zipcode:
+          description: Postcodes associated with the entity.
+          example:
+          - '75008'
+          items:
+            type: string
+          type: array
+      type: object
+    parameters:
+      properties:
+        coordinates:
+          description: "GPS coordinates latitude and longitude.\\\nUsed to improve
+            relevancy of results around the given area.\n"
+          example: 48.873662, 2.295063
+          type: string
+        countries:
+          description: "Array of [two-letter ISO 3166-1 alpha-2 country codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).\\
+            \nLimit the results to given countries.\\\nSelect only one country for
+            the best results.\n"
+          example:
+          - fr
+          items:
+            type: string
+          type: array
+        countryByIP:
+          default: false
+          description: "Automatically select the country to search in via the user
+            IP's detected location.\\\nReturned results will be coming from the user's
+            country's IP.\\\nIf set to `true`, the parameter `countries` acts as a
+            fallback.\n"
+          type: boolean
+        language:
+          description: "[Two-letter ISO 639-1 language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).\\
+            \nDefault results are in their original language.\\\nBy setting this parameter,
+            you can change the language of the results, if the translation is available.\\
+            \nContact us if you need other languages.\n"
+          enum:
+          - en
+          - fr
+          example: fr
+          type: string
+        maxResults:
+          default: 5
+          description: Maximum number of results to return.
+          maximum: 20
+          minimum: 1
+          type: integer
+        types:
+          description: "Select the types of record to return.\\\nPrepend with `-`
+            to omit a type.\\\nReturns all types by default.\n"
+          items:
+            enum:
+            - airport
+            - -airport
+            - bus
+            - -bus
+            - city
+            - -city
+            - country
+            - -country
+            - street
+            - -street
+            - tourism
+            - -tourism
+            - townhall
+            - -townhall
+            - train
+            - -train
+            type: string
+          type: array
+      type: object
+    results:
+      properties:
+        maxResults:
+          description: Maximum number of results items returned.
+          example: 5
+          type: integer
+        query:
+          description: Search text query used for this response.
+          example: 42 avenue Champs Elysees Paris
+          type: string
+        results:
+          items:
+            properties:
+              administrative:
+                description: Administrative name (region).
+                example: Île-de-France
+                type: string
+              city:
+                description: City name.
+                example: Paris 8e Arrondissement
+                type: string
+              country:
+                description: Country name.
+                example: France
+                type: string
+              countrycode:
+                description: "[Two-letter ISO 3166-1 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).\n"
+                example: fr
+                type: string
+              county:
+                description: County name (department).
+                example: Paris
+                type: string
+              highlight:
+                description: Name of the current entity with highlighted matched words.
+                example: <mark>42 Avenue</mark> des <mark>Champs Élysées</mark>
+                type: string
+              lat:
+                description: Latitude.
+                example: 48.871086
+                type: number
+              lng:
+                description: Longitude.
+                example: 2.3036339
+                type: number
+              name:
+                description: Name of the current entity.
+                example: 42 Avenue des Champs Élysées
+                type: string
+              population:
+                description: Population number of the entity city.
+                example: 2220445
+                type: integer
+              type:
+                description: Type of the entity.
+                enum:
+                - airport
+                - bus
+                - city
+                - country
+                - street
+                - tourism
+                - townhall
+                - train
+                example: street
+                type: string
+              zipcode:
+                description: Postcodes associated with the entity.
+                example:
+                - '75008'
+                items:
+                  type: string
+                type: array
+            type: object
+          type: array
+        resultsCount:
+          description: Number of items results found.
+          example: 2
+          type: integer
+      type: object
+    types:
+      enum:
+      - airport
+      - -airport
+      - bus
+      - -bus
+      - city
+      - -city
+      - country
+      - -country
+      - street
+      - -street
+      - tourism
+      - -tourism
+      - townhall
+      - -townhall
+      - train
+      - -train
+      type: string
+    validationError:
+      properties:
+        location:
+          type: string
+        msg:
+          type: string
+        param:
+          type: string
+        value:
+          type: string
+      type: object
+  securitySchemes:
+    api_key:
+      description: Generate your API key in the [app settings](https://app.placekit.io/).
+      in: header
+      name: x-placekit-api-key
+      type: apiKey

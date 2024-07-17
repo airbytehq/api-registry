@@ -1,0 +1,2037 @@
+openapi: 3.0.0
+info:
+  title: NewsCatcher News API V2
+  description: "NewsCatcher is a data-as-a-service startup that has one main goal:\n
+    to build the largest database of structured news articles published online.\n
+    In other words, we're like Google for the news part of the web, which you can
+    access as a source of data.\n"
+  version: 1.0.0
+servers:
+- url: https://api.newscatcherapi.com
+paths:
+  /v2/search:
+    get:
+      summary: Search For Specific News Articles
+      description: Main endpoint that allows you to find news article by keyword,
+        date, language, country, etc.
+      parameters:
+      - description: "Keyword/keywords you're searching for. This is the most important
+          part of your query.\nPlease, refer to the **Advanced Query Parameter** section
+          below for more examples and explanations.\n"
+        name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          example: '"Elon Musk"'
+      - description: "Specifies the languages of the search. For example: `en`.\n
+          The only accepted format is [ISO 639-1 — 2](https://en.wikipedia.org/wiki/ISO_639-1)
+          letter code.\n"
+        name: lang
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - bg
+          - bn
+          - ca
+          - cn
+          - cs
+          - cy
+          - da
+          - de
+          - el
+          - en
+          - es
+          - et
+          - fa
+          - fi
+          - fr
+          - gu
+          - he
+          - hi
+          - hr
+          - hu
+          - id
+          - it
+          - ja
+          - kn
+          - ko
+          - lt
+          - lv
+          - mk
+          - ml
+          - mr
+          - ne
+          - nl
+          - no
+          - pa
+          - pl
+          - pt
+          - ro
+          - ru
+          - sk
+          - sl
+          - so
+          - sq
+          - sv
+          - sw
+          - ta
+          - te
+          - th
+          - tl
+          - tr
+          - tw
+          - uk
+          - ur
+          - vi
+          example: en
+      - description: "Inverse to the `lang` parameter\n"
+        name: not_lang
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - bg
+          - bn
+          - ca
+          - cn
+          - cs
+          - cy
+          - da
+          - de
+          - el
+          - en
+          - es
+          - et
+          - fa
+          - fi
+          - fr
+          - gu
+          - he
+          - hi
+          - hr
+          - hu
+          - id
+          - it
+          - ja
+          - kn
+          - ko
+          - lt
+          - lv
+          - mk
+          - ml
+          - mr
+          - ne
+          - nl
+          - no
+          - pa
+          - pl
+          - pt
+          - ro
+          - ru
+          - sk
+          - sl
+          - so
+          - sq
+          - sv
+          - sw
+          - ta
+          - te
+          - th
+          - tl
+          - tr
+          - tw
+          - uk
+          - ur
+          - vi
+          example: en
+      - description: "There are 3 types of date precision we define:\n`full` — day
+          and time of an article is correctly identified with the appropriate timezone\n
+          `timezone unknown` — day and time of an article is correctly identified
+          without timezone\n`date` — only the day is identified without an exact time\n"
+        name: published_date_precision
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - full
+          - timezone unknown
+          - date
+          example: full
+      - description: "`YYYY/mm/dd` From which point in time to start the search.\n
+          The default timezone is UTC.\nDefaults to the past week.\n"
+        name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          example: 2021/05/06
+      - description: "`YYYY/mm/dd` Until which point in time to search for.\nThe default
+          timezone is UTC.\n"
+        name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          example: 2021/05/06
+      - description: "By default, we search what you specified in the `q` parameter
+          in both `title` and `summary` of the article.\nHowever, you can limit this
+          to either `title` or `summary`\n"
+        name: search_in
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - title
+          - summary
+          - title_summary
+          example: title
+      - description: "Countries where the news publisher is located.\n**Important**:
+          This parameter is not responsible for the countries mentioned in the news
+          article.\nOne or multiple countries can be used in the search.\nThe only
+          acceptable format is [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)\n
+          For example, `US,CA,MX` or just `US`\n"
+        name: countries
+        in: query
+        schema:
+          type: string
+          example: US,CA
+      - description: "The inverse of the `countries` parameter.\n"
+        name: not_countries
+        in: query
+        required: false
+        schema:
+          type: string
+          example: US,CA
+      - description: "Accepted values: `news`, `sport`, `tech`, `world`, `finance`,
+          `politics`, `business`, `economics`, `entertainment`, `beauty`, `travel`,
+          `music`, `food`, `science`, `gaming`\nThe topic to which you want to restrict
+          the articles of your choice.\nNot all news articles are assigned with a
+          topic, therefore, we cannot guarantee that 100% of topics talking about
+          technology will be assigned a tech label.\n"
+        name: topic
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - news
+          - sport
+          - tech
+          - world
+          - finance
+          - politics
+          - business
+          - economics
+          - entertainment
+          - beauty
+          - travel
+          - music
+          - food
+          - science
+          - gaming
+          example: business
+      - description: "One or more news resources to filter your search. It should
+          be the normal form of the URL,\nFor example: `nytimes.com,theguardian.com`\n"
+        name: sources
+        in: query
+        required: false
+        schema:
+          type: string
+          example: nytimes.com,theguardian.com
+      - description: "One or more sources to be excluded from the search.\nComma-separated
+          list. For example: `nytimes.com,cnn.com,wsj.com`\n"
+        name: not_sources
+        in: query
+        required: false
+        schema:
+          type: string
+          example: nytimes.com,theguardian.com
+      - description: "Default: `True`\nLimit the search only for the sources which
+          are in the top 1 million online websites. Unranked sources are assigned
+          a rank that equals `999999`\n"
+        name: ranked_only
+        in: query
+        required: false
+        schema:
+          type: boolean
+          example: true
+      - description: "`[0:999999]` The lowest boundary of the rank of a news website
+          to filter by.\nImportant: lower rank means that a source is more popular\n"
+        name: from_rank
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 999999
+          example: 1000
+      - description: "`[0:999999]` The upper boundary of the rank of a news website
+          to filter by.\n"
+        name: to_rank
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 999999
+          example: 1000
+      - description: "`relevancy` (default value) — the most relevant results first\n
+          `date` — the most recently published results first\n`rank` — the results
+          from the highest-ranked sources first\n"
+        name: sort_by
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - relevancy
+          - date
+          - rank
+          example: rank
+      - description: "`[1:100]` How many articles to return per page.\n"
+        name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 100
+      - description: "The number of the page. Use it to scroll through the results.\n
+          This parameter is used to paginate: scroll through results because one API
+          response cannot return more than 100 articles.\n"
+        name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          example: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: OK
+                  total_hits:
+                    type: integer
+                  page:
+                    type: integer
+                  total_pages:
+                    type: integer
+                  page_size:
+                    type: integer
+                  articles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                        author:
+                          type: string
+                        published_date:
+                          type: string
+                        published_date_precision:
+                          type: string
+                        link:
+                          type: string
+                        clean_url:
+                          type: string
+                        excerpt:
+                          type: string
+                        summary:
+                          type: string
+                        rights:
+                          type: string
+                        rank:
+                          type: integer
+                        topic:
+                          type: string
+                        country:
+                          type: string
+                        language:
+                          type: string
+                        authors:
+                          type: array
+                          items:
+                            type: string
+                        is_opinion:
+                          type: boolean
+                        twitter_account:
+                          type: string
+                        _score:
+                          type: number
+                        _id:
+                          type: string
+                  user_input:
+                    type: object
+                    properties:
+                      q:
+                        type: string
+                      search_in:
+                        type: array
+                        items:
+                          type: string
+                      lang:
+                        type: array
+                        items:
+                          type: string
+                      not_lang:
+                        type: array
+                        items:
+                          type: string
+                      countries:
+                        type: array
+                        items:
+                          type: string
+                      not_countries:
+                        type: array
+                        items:
+                          type: string
+                      from:
+                        type: string
+                      to:
+                        type: string
+                      ranked_only:
+                        type: string
+                      from_rank:
+                        type: integer
+                      to_rank:
+                        type: integer
+                      sort_by:
+                        type: string
+                      page:
+                        type: integer
+                      size:
+                        type: integer
+                      sources:
+                        type: array
+                        items:
+                          type: string
+                      not_sources:
+                        type: array
+                        items:
+                          type: string
+                      topic:
+                        type: string
+                      published_date_precision:
+                        type: string
+        '400':
+          description: API is not put in headers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: API Key not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+        '406':
+          description: Wrong parameter has been used
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+        '408':
+          description: Request Timeout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+        '429':
+          description: Concurrency violated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+  /v2/latest_headlines:
+    get:
+      summary: Get Latest News Articles
+      description: Get the latest headlines given any topic, country, or language.
+      parameters:
+      - description: "Specifies the languages of the search. For example: `en`.\n
+          The only accepted format is [ISO 639-1 — 2](https://en.wikipedia.org/wiki/ISO_639-1)
+          letter code.\n"
+        name: lang
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - bg
+          - bn
+          - ca
+          - cn
+          - cs
+          - cy
+          - da
+          - de
+          - el
+          - en
+          - es
+          - et
+          - fa
+          - fi
+          - fr
+          - gu
+          - he
+          - hi
+          - hr
+          - hu
+          - id
+          - it
+          - ja
+          - kn
+          - ko
+          - lt
+          - lv
+          - mk
+          - ml
+          - mr
+          - ne
+          - nl
+          - no
+          - pa
+          - pl
+          - pt
+          - ro
+          - ru
+          - sk
+          - sl
+          - so
+          - sq
+          - sv
+          - sw
+          - ta
+          - te
+          - th
+          - tl
+          - tr
+          - tw
+          - uk
+          - ur
+          - vi
+          example: en
+      - description: "Inverse to the `lang` parameter\n"
+        name: not_lang
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - bg
+          - bn
+          - ca
+          - cn
+          - cs
+          - cy
+          - da
+          - de
+          - el
+          - en
+          - es
+          - et
+          - fa
+          - fi
+          - fr
+          - gu
+          - he
+          - hi
+          - hr
+          - hu
+          - id
+          - it
+          - ja
+          - kn
+          - ko
+          - lt
+          - lv
+          - mk
+          - ml
+          - mr
+          - ne
+          - nl
+          - no
+          - pa
+          - pl
+          - pt
+          - ro
+          - ru
+          - sk
+          - sl
+          - so
+          - sq
+          - sv
+          - sw
+          - ta
+          - te
+          - th
+          - tl
+          - tr
+          - tw
+          - uk
+          - ur
+          - vi
+          example: en
+      - description: "Countries where the news publisher is located.\n**Important**:
+          This parameter is not responsible for the countries mentioned in the news
+          article.\nOne or multiple countries can be used in the search.\nThe only
+          acceptable format is [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)\n
+          For example, `US,CA,MX` or just `US`\n"
+        name: countries
+        in: query
+        schema:
+          type: string
+          example: US,CA
+      - description: "The inverse of the `countries` parameter.\n"
+        name: not_countries
+        in: query
+        required: false
+        schema:
+          type: string
+          example: US,CA
+      - description: "Accepted values: `news`, `sport`, `tech`, `world`, `finance`,
+          `politics`, `business`, `economics`, `entertainment`, `beauty`, `travel`,
+          `music`, `food`, `science`, `gaming`\nThe topic to which you want to restrict
+          the articles of your choice.\nNot all news articles are assigned with a
+          topic, therefore, we cannot guarantee that 100% of topics talking about
+          technology will be assigned a tech label.\n"
+        name: topic
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - news
+          - sport
+          - tech
+          - world
+          - finance
+          - politics
+          - business
+          - economics
+          - entertainment
+          - beauty
+          - travel
+          - music
+          - food
+          - science
+          - gaming
+          example: business
+      - description: "One or more news resources to filter your search. It should
+          be the normal form of the URL,\nFor example: `nytimes.com,theguardian.com`\n"
+        name: sources
+        in: query
+        required: false
+        schema:
+          type: string
+          example: nytimes.com,theguardian.com
+      - description: "One or more sources to be excluded from the search.\nComma-separated
+          list. For example: `nytimes.com,cnn.com,wsj.com`\n"
+        name: not_sources
+        in: query
+        required: false
+        schema:
+          type: string
+          example: nytimes.com,theguardian.com
+      - description: "Default: `True`\nLimit the search only for the sources which
+          are in the top 1 million online websites. Unranked sources are assigned
+          a rank that equals `999999`\n"
+        name: ranked_only
+        in: query
+        required: false
+        schema:
+          type: boolean
+          example: true
+      - description: "`[1:100]` How many articles to return per page.\n"
+        name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 100
+      - description: "The number of the page. Use it to scroll through the results.\n
+          This parameter is used to paginate: scroll through results because one API
+          response cannot return more than 100 articles.\n"
+        name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          example: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: OK
+                  total_hits:
+                    type: integer
+                  page:
+                    type: integer
+                  total_pages:
+                    type: integer
+                  page_size:
+                    type: integer
+                  articles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                        author:
+                          type: string
+                        published_date:
+                          type: string
+                        published_date_precision:
+                          type: string
+                        link:
+                          type: string
+                        clean_url:
+                          type: string
+                        excerpt:
+                          type: string
+                        summary:
+                          type: string
+                        rights:
+                          type: string
+                        rank:
+                          type: integer
+                        topic:
+                          type: string
+                        country:
+                          type: string
+                        language:
+                          type: string
+                        authors:
+                          type: array
+                          items:
+                            type: string
+                        is_opinion:
+                          type: boolean
+                        twitter_account:
+                          type: string
+                        _score:
+                          type: number
+                        _id:
+                          type: string
+                  user_input:
+                    type: object
+                    properties:
+                      lang:
+                        type: array
+                        items:
+                          type: string
+                      not_lang:
+                        type: array
+                        items:
+                          type: string
+                      countries:
+                        type: array
+                        items:
+                          type: string
+                      not_countries:
+                        type: array
+                        items:
+                          type: string
+                      page:
+                        type: integer
+                      size:
+                        type: integer
+                      sources:
+                        type: array
+                        items:
+                          type: string
+                      not_sources:
+                        type: array
+                        items:
+                          type: string
+                      topic:
+                        type: string
+        '400':
+          description: API is not put in headers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: API Key not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+        '406':
+          description: Wrong parameter has been used
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+        '408':
+          description: Request Timeout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+        '429':
+          description: Concurrency violated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+  /v2/sources:
+    get:
+      summary: Get top news sources supported by NewsCatcher.
+      description: Returns a list of the top 100 supported news websites. Overall,
+        we support over 60,000 websites. Using this endpoint, you may find the top
+        100 for your specific language, country, topic combination.
+      parameters:
+      - description: "Specifies the languages of the search. For example: `en`.\n
+          The only accepted format is [ISO 639-1 — 2](https://en.wikipedia.org/wiki/ISO_639-1)
+          letter code.\n"
+        name: lang
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - bg
+          - bn
+          - ca
+          - cn
+          - cs
+          - cy
+          - da
+          - de
+          - el
+          - en
+          - es
+          - et
+          - fa
+          - fi
+          - fr
+          - gu
+          - he
+          - hi
+          - hr
+          - hu
+          - id
+          - it
+          - ja
+          - kn
+          - ko
+          - lt
+          - lv
+          - mk
+          - ml
+          - mr
+          - ne
+          - nl
+          - no
+          - pa
+          - pl
+          - pt
+          - ro
+          - ru
+          - sk
+          - sl
+          - so
+          - sq
+          - sv
+          - sw
+          - ta
+          - te
+          - th
+          - tl
+          - tr
+          - tw
+          - uk
+          - ur
+          - vi
+          example: en
+      - description: "Countries where the news publisher is located.\n**Important**:
+          This parameter is not responsible for the countries mentioned in the news
+          article.\nOne or multiple countries can be used in the search.\nThe only
+          acceptable format is [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)\n
+          For example, `US,CA,MX` or just `US`\n"
+        name: countries
+        in: query
+        schema:
+          type: string
+          example: US,CA
+      - description: "Accepted values: `news`, `sport`, `tech`, `world`, `finance`,
+          `politics`, `business`, `economics`, `entertainment`, `beauty`, `travel`,
+          `music`, `food`, `science`, `gaming`\nThe topic to which you want to restrict
+          the articles of your choice.\nNot all news articles are assigned with a
+          topic, therefore, we cannot guarantee that 100% of topics talking about
+          technology will be assigned a tech label.\n"
+        name: topic
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - news
+          - sport
+          - tech
+          - world
+          - finance
+          - politics
+          - business
+          - economics
+          - entertainment
+          - beauty
+          - travel
+          - music
+          - food
+          - science
+          - gaming
+          example: business
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: array
+                    items:
+                      type: string
+                  sources:
+                    type: string
+                  user_input:
+                    type: object
+                    properties:
+                      lang:
+                        type: array
+                        items:
+                          type: string
+                      countries:
+                        type: array
+                        items:
+                          type: string
+                      topic:
+                        type: string
+        '400':
+          description: API is not put in headers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: API Key not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+        '406':
+          description: Wrong parameter has been used
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+        '408':
+          description: Request Timeout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+        '429':
+          description: Concurrency violated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - OK
+                    - error
+                    example: error
+                  error_code:
+                    type: string
+                  message:
+                    type: string
+components:
+  parameters:
+    apiKey:
+      description: "Your unique authentication token\n"
+      name: x-api-key
+      in: header
+      required: true
+      schema:
+        type: string
+    q:
+      description: "Keyword/keywords you're searching for. This is the most important
+        part of your query.\nPlease, refer to the **Advanced Query Parameter** section
+        below for more examples and explanations.\n"
+      name: q
+      in: query
+      required: true
+      schema:
+        type: string
+        example: '"Elon Musk"'
+    lang:
+      description: "Specifies the languages of the search. For example: `en`.\nThe
+        only accepted format is [ISO 639-1 — 2](https://en.wikipedia.org/wiki/ISO_639-1)
+        letter code.\n"
+      name: lang
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - af
+        - ar
+        - bg
+        - bn
+        - ca
+        - cn
+        - cs
+        - cy
+        - da
+        - de
+        - el
+        - en
+        - es
+        - et
+        - fa
+        - fi
+        - fr
+        - gu
+        - he
+        - hi
+        - hr
+        - hu
+        - id
+        - it
+        - ja
+        - kn
+        - ko
+        - lt
+        - lv
+        - mk
+        - ml
+        - mr
+        - ne
+        - nl
+        - no
+        - pa
+        - pl
+        - pt
+        - ro
+        - ru
+        - sk
+        - sl
+        - so
+        - sq
+        - sv
+        - sw
+        - ta
+        - te
+        - th
+        - tl
+        - tr
+        - tw
+        - uk
+        - ur
+        - vi
+        example: en
+    not_lang:
+      description: "Inverse to the `lang` parameter\n"
+      name: not_lang
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - af
+        - ar
+        - bg
+        - bn
+        - ca
+        - cn
+        - cs
+        - cy
+        - da
+        - de
+        - el
+        - en
+        - es
+        - et
+        - fa
+        - fi
+        - fr
+        - gu
+        - he
+        - hi
+        - hr
+        - hu
+        - id
+        - it
+        - ja
+        - kn
+        - ko
+        - lt
+        - lv
+        - mk
+        - ml
+        - mr
+        - ne
+        - nl
+        - no
+        - pa
+        - pl
+        - pt
+        - ro
+        - ru
+        - sk
+        - sl
+        - so
+        - sq
+        - sv
+        - sw
+        - ta
+        - te
+        - th
+        - tl
+        - tr
+        - tw
+        - uk
+        - ur
+        - vi
+        example: en
+    published_date_precision:
+      description: "There are 3 types of date precision we define:\n`full` — day and
+        time of an article is correctly identified with the appropriate timezone\n
+        `timezone unknown` — day and time of an article is correctly identified without
+        timezone\n`date` — only the day is identified without an exact time\n"
+      name: published_date_precision
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - full
+        - timezone unknown
+        - date
+        example: full
+    from:
+      description: "`YYYY/mm/dd` From which point in time to start the search.\nThe
+        default timezone is UTC.\nDefaults to the past week.\n"
+      name: from
+      in: query
+      required: false
+      schema:
+        type: string
+        example: 2021/05/06
+    to:
+      description: "`YYYY/mm/dd` Until which point in time to search for.\nThe default
+        timezone is UTC.\n"
+      name: to
+      in: query
+      required: false
+      schema:
+        type: string
+        example: 2021/05/06
+    search_in:
+      description: "By default, we search what you specified in the `q` parameter
+        in both `title` and `summary` of the article.\nHowever, you can limit this
+        to either `title` or `summary`\n"
+      name: search_in
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - title
+        - summary
+        - title_summary
+        example: title
+    countries:
+      description: "Countries where the news publisher is located.\n**Important**:
+        This parameter is not responsible for the countries mentioned in the news
+        article.\nOne or multiple countries can be used in the search.\nThe only acceptable
+        format is [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)\n
+        For example, `US,CA,MX` or just `US`\n"
+      name: countries
+      in: query
+      schema:
+        type: string
+        example: US,CA
+    not_countries:
+      description: "The inverse of the `countries` parameter.\n"
+      name: not_countries
+      in: query
+      required: false
+      schema:
+        type: string
+        example: US,CA
+    topic:
+      description: "Accepted values: `news`, `sport`, `tech`, `world`, `finance`,
+        `politics`, `business`, `economics`, `entertainment`, `beauty`, `travel`,
+        `music`, `food`, `science`, `gaming`\nThe topic to which you want to restrict
+        the articles of your choice.\nNot all news articles are assigned with a topic,
+        therefore, we cannot guarantee that 100% of topics talking about technology
+        will be assigned a tech label.\n"
+      name: topic
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - news
+        - sport
+        - tech
+        - world
+        - finance
+        - politics
+        - business
+        - economics
+        - entertainment
+        - beauty
+        - travel
+        - music
+        - food
+        - science
+        - gaming
+        example: business
+    sources:
+      description: "One or more news resources to filter your search. It should be
+        the normal form of the URL,\nFor example: `nytimes.com,theguardian.com`\n"
+      name: sources
+      in: query
+      required: false
+      schema:
+        type: string
+        example: nytimes.com,theguardian.com
+    not_sources:
+      description: "One or more sources to be excluded from the search.\nComma-separated
+        list. For example: `nytimes.com,cnn.com,wsj.com`\n"
+      name: not_sources
+      in: query
+      required: false
+      schema:
+        type: string
+        example: nytimes.com,theguardian.com
+    ranked_only:
+      description: "Default: `True`\nLimit the search only for the sources which are
+        in the top 1 million online websites. Unranked sources are assigned a rank
+        that equals `999999`\n"
+      name: ranked_only
+      in: query
+      required: false
+      schema:
+        type: boolean
+        example: true
+    from_rank:
+      description: "`[0:999999]` The lowest boundary of the rank of a news website
+        to filter by.\nImportant: lower rank means that a source is more popular\n"
+      name: from_rank
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 999999
+        example: 1000
+    to_rank:
+      description: "`[0:999999]` The upper boundary of the rank of a news website
+        to filter by.\n"
+      name: to_rank
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 999999
+        example: 1000
+    sort_by:
+      description: "`relevancy` (default value) — the most relevant results first\n
+        `date` — the most recently published results first\n`rank` — the results from
+        the highest-ranked sources first\n"
+      name: sort_by
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - relevancy
+        - date
+        - rank
+        example: rank
+    when:
+      description: "The time period you want to get the latest headlines for.\n\n
+        Accepted forms:\n- `7d` => Dailly Form (last 7 days time period),  `30d` \
+        \ (last 30 days time period)\n- `1h` => Hourly Form (last hour), `24h` (last
+        24 hours)\n\n*Default*: The number of historic data available for your subscription
+        plan\n"
+      name: when
+      in: query
+      required: false
+      schema:
+        type: string
+        example: 24h
+    page_size:
+      description: "`[1:100]` How many articles to return per page.\n"
+      name: page_size
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        example: 100
+    page:
+      description: "The number of the page. Use it to scroll through the results.\n
+        This parameter is used to paginate: scroll through results because one API
+        response cannot return more than 100 articles.\n"
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        example: 1
+  schemas:
+    qStringType:
+      type: string
+      example: '"Elon Musk"'
+    langType:
+      type: string
+      enum:
+      - af
+      - ar
+      - bg
+      - bn
+      - ca
+      - cn
+      - cs
+      - cy
+      - da
+      - de
+      - el
+      - en
+      - es
+      - et
+      - fa
+      - fi
+      - fr
+      - gu
+      - he
+      - hi
+      - hr
+      - hu
+      - id
+      - it
+      - ja
+      - kn
+      - ko
+      - lt
+      - lv
+      - mk
+      - ml
+      - mr
+      - ne
+      - nl
+      - no
+      - pa
+      - pl
+      - pt
+      - ro
+      - ru
+      - sk
+      - sl
+      - so
+      - sq
+      - sv
+      - sw
+      - ta
+      - te
+      - th
+      - tl
+      - tr
+      - tw
+      - uk
+      - ur
+      - vi
+      example: en
+    datePrecisionType:
+      type: string
+      enum:
+      - full
+      - timezone unknown
+      - date
+      example: full
+    dateType:
+      type: string
+      example: 2021/05/06
+    searchInType:
+      type: string
+      enum:
+      - title
+      - summary
+      - title_summary
+      example: title
+    countriesType:
+      type: string
+      example: US,CA
+    topicType:
+      type: string
+      enum:
+      - news
+      - sport
+      - tech
+      - world
+      - finance
+      - politics
+      - business
+      - economics
+      - entertainment
+      - beauty
+      - travel
+      - music
+      - food
+      - science
+      - gaming
+      example: business
+    sourcesType:
+      type: string
+      example: nytimes.com,theguardian.com
+    rankedOnlyType:
+      type: boolean
+      example: true
+    rankType:
+      type: integer
+      minimum: 1
+      maximum: 999999
+      example: 1000
+    sortByType:
+      type: string
+      enum:
+      - relevancy
+      - date
+      - rank
+      example: rank
+    whenType:
+      type: string
+      example: 24h
+    pageSizeType:
+      type: integer
+      minimum: 1
+      maximum: 100
+      example: 100
+    pageType:
+      type: integer
+      minimum: 1
+      example: 1
+    statusType:
+      type: string
+      enum:
+      - OK
+      - error
+      example: OK
+    statusType2:
+      type: string
+      enum:
+      - OK
+      - error
+      example: error
+    integerType:
+      type: integer
+    stringType:
+      type: string
+    listType:
+      type: array
+      items:
+        type: string
+    booleanType:
+      type: boolean
+    floatType:
+      type: number
+    articleType:
+      type: array
+      items:
+        type: object
+        properties:
+          title:
+            type: string
+          author:
+            type: string
+          published_date:
+            type: string
+          published_date_precision:
+            type: string
+          link:
+            type: string
+          clean_url:
+            type: string
+          excerpt:
+            type: string
+          summary:
+            type: string
+          rights:
+            type: string
+          rank:
+            type: integer
+          topic:
+            type: string
+          country:
+            type: string
+          language:
+            type: string
+          authors:
+            type: array
+            items:
+              type: string
+          is_opinion:
+            type: boolean
+          twitter_account:
+            type: string
+          _score:
+            type: number
+          _id:
+            type: string
+    userInputType:
+      type: object
+      properties:
+        q:
+          type: string
+        search_in:
+          type: array
+          items:
+            type: string
+        lang:
+          type: array
+          items:
+            type: string
+        not_lang:
+          type: array
+          items:
+            type: string
+        countries:
+          type: array
+          items:
+            type: string
+        not_countries:
+          type: array
+          items:
+            type: string
+        from:
+          type: string
+        to:
+          type: string
+        ranked_only:
+          type: string
+        from_rank:
+          type: integer
+        to_rank:
+          type: integer
+        sort_by:
+          type: string
+        page:
+          type: integer
+        size:
+          type: integer
+        sources:
+          type: array
+          items:
+            type: string
+        not_sources:
+          type: array
+          items:
+            type: string
+        topic:
+          type: string
+        published_date_precision:
+          type: string
+    userInputLatestType:
+      type: object
+      properties:
+        lang:
+          type: array
+          items:
+            type: string
+        not_lang:
+          type: array
+          items:
+            type: string
+        countries:
+          type: array
+          items:
+            type: string
+        not_countries:
+          type: array
+          items:
+            type: string
+        page:
+          type: integer
+        size:
+          type: integer
+        sources:
+          type: array
+          items:
+            type: string
+        not_sources:
+          type: array
+          items:
+            type: string
+        topic:
+          type: string
+    userInputSourcesType:
+      type: object
+      properties:
+        lang:
+          type: array
+          items:
+            type: string
+        countries:
+          type: array
+          items:
+            type: string
+        topic:
+          type: string
+    200_response:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - OK
+          - error
+          example: OK
+        total_hits:
+          type: integer
+        page:
+          type: integer
+        total_pages:
+          type: integer
+        page_size:
+          type: integer
+        articles:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              author:
+                type: string
+              published_date:
+                type: string
+              published_date_precision:
+                type: string
+              link:
+                type: string
+              clean_url:
+                type: string
+              excerpt:
+                type: string
+              summary:
+                type: string
+              rights:
+                type: string
+              rank:
+                type: integer
+              topic:
+                type: string
+              country:
+                type: string
+              language:
+                type: string
+              authors:
+                type: array
+                items:
+                  type: string
+              is_opinion:
+                type: boolean
+              twitter_account:
+                type: string
+              _score:
+                type: number
+              _id:
+                type: string
+        user_input:
+          type: object
+          properties:
+            q:
+              type: string
+            search_in:
+              type: array
+              items:
+                type: string
+            lang:
+              type: array
+              items:
+                type: string
+            not_lang:
+              type: array
+              items:
+                type: string
+            countries:
+              type: array
+              items:
+                type: string
+            not_countries:
+              type: array
+              items:
+                type: string
+            from:
+              type: string
+            to:
+              type: string
+            ranked_only:
+              type: string
+            from_rank:
+              type: integer
+            to_rank:
+              type: integer
+            sort_by:
+              type: string
+            page:
+              type: integer
+            size:
+              type: integer
+            sources:
+              type: array
+              items:
+                type: string
+            not_sources:
+              type: array
+              items:
+                type: string
+            topic:
+              type: string
+            published_date_precision:
+              type: string
+    200_response_latest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - OK
+          - error
+          example: OK
+        total_hits:
+          type: integer
+        page:
+          type: integer
+        total_pages:
+          type: integer
+        page_size:
+          type: integer
+        articles:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              author:
+                type: string
+              published_date:
+                type: string
+              published_date_precision:
+                type: string
+              link:
+                type: string
+              clean_url:
+                type: string
+              excerpt:
+                type: string
+              summary:
+                type: string
+              rights:
+                type: string
+              rank:
+                type: integer
+              topic:
+                type: string
+              country:
+                type: string
+              language:
+                type: string
+              authors:
+                type: array
+                items:
+                  type: string
+              is_opinion:
+                type: boolean
+              twitter_account:
+                type: string
+              _score:
+                type: number
+              _id:
+                type: string
+        user_input:
+          type: object
+          properties:
+            lang:
+              type: array
+              items:
+                type: string
+            not_lang:
+              type: array
+              items:
+                type: string
+            countries:
+              type: array
+              items:
+                type: string
+            not_countries:
+              type: array
+              items:
+                type: string
+            page:
+              type: integer
+            size:
+              type: integer
+            sources:
+              type: array
+              items:
+                type: string
+            not_sources:
+              type: array
+              items:
+                type: string
+            topic:
+              type: string
+    200_response_sources:
+      type: object
+      properties:
+        message:
+          type: array
+          items:
+            type: string
+        sources:
+          type: string
+        user_input:
+          type: object
+          properties:
+            lang:
+              type: array
+              items:
+                type: string
+            countries:
+              type: array
+              items:
+                type: string
+            topic:
+              type: string
+    error_response:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - OK
+          - error
+          example: error
+        error_code:
+          type: string
+        message:
+          type: string
+  securitySchemes:
+    API Key:
+      name: x-api-key
+      type: apiKey
+      in: header
+      description: Your unique authentication token
+security:
+- API Key: []
